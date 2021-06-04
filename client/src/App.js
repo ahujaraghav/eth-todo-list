@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { EthereumService } from './services/blockchain/ethereum';
+import { getTasksAction, createTaskAction } from './store/actions/todo';
 
 function App() {
   const [accountNumber, updateAccountNumber] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [newTaskValue, setNewTaskValue] = useState('');
-  const [tasks, setTasks] = useState([]);
-
-  async function getTasks() {
-    const tasks = await EthereumService.getTasks();
-    setTasks(tasks);
-  }
 
   useEffect(() => {
     async function load() {
       await EthereumService.load();
-      await getTasks();
+      dispatch(getTasksAction());
       setIsLoading(false);
     }
     load();
   }, []);
+
+  const tasks = useSelector((state) => state.todo.tasks);
+  const dispatch = useDispatch();
 
   return (
     <div className="App">
@@ -32,8 +31,7 @@ function App() {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            await EthereumService.createTask(newTaskValue);
-            getTasks();
+            dispatch(createTaskAction(newTaskValue));
             setNewTaskValue('');
           }}
         >
